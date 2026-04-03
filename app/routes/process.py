@@ -8,14 +8,8 @@ router = APIRouter()
 
 @router.post("/process")
 async def process_endpoint(envelope: ExecutionEnvelope):
-    """
-    Endpoint to run the full processing pipeline:
-    Validate, then Match if needed, return enriched envelope.
-    """
-    # Step 1: Validate
     envelope = await validate_envelope(envelope)
 
-    # Step 2: Match if needed (commodity code confidence below threshold)
     code_field = envelope.commodity_code
     threshold = envelope.processing_instructions.confidence_threshold
 

@@ -3,9 +3,6 @@ from typing import Optional, Dict
 from pydantic import BaseModel, ConfigDict
 
 class AuditEntry(BaseModel):
-    """
-    A record of actions taken on the envelope for audit purposes.
-    """
     model_config = ConfigDict(strict=True)
     timestamp: datetime
     service: str

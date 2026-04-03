@@ -2,9 +2,6 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict
 
 class MatchingResult(BaseModel):
-    """
-    The result of attempting to match a commodity description to an HS code.
-    """
     model_config = ConfigDict(strict=True)
     matched_code: str | None
     match_confidence: float

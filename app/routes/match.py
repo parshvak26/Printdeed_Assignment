@@ -7,8 +7,5 @@ router = APIRouter()
 
 @router.post("/match")
 async def match_endpoint(envelope: ExecutionEnvelope):
-    """
-    Endpoint to perform LLM-assisted commodity matching.
-    """
     updated_env = await match_commodity(envelope)
     return updated_env.matching_result

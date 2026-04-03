@@ -9,10 +9,6 @@ from app.models.processing import ProcessingInstructions
 from app.models.field import ExtractedField
 
 class ExecutionEnvelope(BaseModel):
-    """
-    The main envelope containing extracted data, instructions, and fields
-    to be enriched.
-    """
     model_config = ConfigDict(strict=True)
 
     shipment_id: ExtractedField
@@ -22,17 +18,12 @@ class ExecutionEnvelope(BaseModel):
     ship_date: ExtractedField
     processing_instructions: ProcessingInstructions
 
-    # Enriched fields (to be appended by services)
     audit_trail: List[AuditEntry] = []
     decision: Optional[Decision] = None
     matching_result: Optional[MatchingResult] = None
 
     @model_validator(mode='after')
     def check_required_fields(cls, env: ExecutionEnvelope) -> ExecutionEnvelope:
-        """
-        Ensure at least one of commodity_code or commodity_desc is provided.
-        If both are missing, validation fails.
-        """
         if env.commodity_code is None and env.commodity_desc is None:
             raise ValueError("At least one of commodity_code or commodity_desc must be provided")
         return env

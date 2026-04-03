@@ -5,7 +5,6 @@ from app.models.envelope import ExecutionEnvelope
 from app.models.match import MatchingResult
 from app.models.audit import AuditEntry
 
-# In-memory dataset for commodity matching
 HS_CATALOG = [
     {"hs_code": "HS001", "description": "Red apples", "category": "Fruit", "restricted": False, "typical_weight_kg": 0.1},
     {"hs_code": "HS002", "description": "Green apples", "category": "Fruit", "restricted": False, "typical_weight_kg": 0.1},
@@ -20,11 +19,6 @@ HS_CATALOG = [
 ]
 
 async def call_llm(commodity_desc: str) -> dict:
-    """
-    Calls an LLM API to find the best HS code match for the description.
-    Returns a dict with keys: code, confidence, rationale.
-    """
-    # Example: using a hypothetical LLM endpoint (this should be configurable)
     LLM_ENDPOINT = "https://api.example.com/llm-match"
     prompt = (
         f"Given the product description '{commodity_desc}', find the best matching HS code. "
@@ -37,17 +31,12 @@ async def call_llm(commodity_desc: str) -> dict:
         return data
 
 async def match_commodity(envelope: ExecutionEnvelope) -> ExecutionEnvelope:
-    """
-    Match commodity description to HS code using an in-memory catalog and LLM.
-    """
     desc_field = envelope.commodity_desc
     code_field = envelope.commodity_code
 
     threshold = envelope.processing_instructions.confidence_threshold
 
-    # If existing code has high confidence, skip matching
     if code_field is not None and code_field.confidence >= threshold:
-        # Use existing code as a fallback exact match
         result = MatchingResult(
             matched_code=code_field.value,
             match_confidence=code_field.confidence,
@@ -58,7 +47,6 @@ async def match_commodity(envelope: ExecutionEnvelope) -> ExecutionEnvelope:
         envelope.matching_result = result
         return envelope
 
-    # Try exact description match in catalog
     if desc_field:
         desc = str(desc_field.value).lower()
         for item in HS_CATALOG:
@@ -71,11 +59,10 @@ async def match_commodity(envelope: ExecutionEnvelope) -> ExecutionEnvelope:
                     source="catalog_exact"
                 )
                 envelope.matching_result = result
-                return envelope
+        return envelope
 
-    # Use LLM to find best match
     try:
-        llm_response = await call_llm(desc_field.value) # type: ignore
+        llm_response = await call_llm(desc_field.value)
         matched_code = llm_response.get("code")
         confidence = float(llm_response.get("confidence", 0))
         rationale = llm_response.get("rationale", "")
@@ -88,7 +75,6 @@ async def match_commodity(envelope: ExecutionEnvelope) -> ExecutionEnvelope:
             source="llm_match"
         )
     except Exception as e:
-        # LLM call failed or returned bad output
         result = MatchingResult(
             matched_code=None,
             match_confidence=0.0,
@@ -96,7 +82,6 @@ async def match_commodity(envelope: ExecutionEnvelope) -> ExecutionEnvelope:
             fallback_used=False,
             source="no_match"
         )
-        # Append audit for LLM failure
         audit_entry = AuditEntry(
             timestamp=datetime.utcnow(),
             service="matching",
@@ -107,7 +92,6 @@ async def match_commodity(envelope: ExecutionEnvelope) -> ExecutionEnvelope:
         )
         envelope.audit_trail.append(audit_entry)
 
-    # Decision override if confidence too low
     if result.match_confidence < 0.70 and envelope.decision:
         envelope.decision.route = "hitl_review"
 
