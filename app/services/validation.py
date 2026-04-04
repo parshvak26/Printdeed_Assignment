@@ -27,7 +27,6 @@ async def validate_envelope(envelope: ExecutionEnvelope) -> ExecutionEnvelope:
     try:
         ship_date = datetime.fromisoformat(str(envelope.ship_date.value))
         now = datetime.utcnow()
-        # Check not in future
         if ship_date > now:
             failures['ship_date'] = "Ship date is in the future"
         elif now - ship_date > timedelta(days=365):
