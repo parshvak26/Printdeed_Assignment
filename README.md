@@ -65,19 +65,3 @@ uvicorn app.main:app --reload
 }
 ```
 
-## Implemented Features
-
-- **Strict Validation (Pydantic v2)**: Ensures required fields and types are correct.
-- **Confidence & Date Checks**: Flags fields below threshold; checks `ship_date` is valid.
-- **Decision Logic**: Routes to `auto_approve`, `hitl_review`, or `rejected`.
-- **Audit Trail**: Logs actions, results, and failure reasons in the envelope.
-- **LLM Matching**: Attempts HS code matching via an in-memory catalog or LLM; graceful fallback on failure.
-- **Async FastAPI**: All endpoints and services use async for performance.
-
-## Future Improvements
-
-- **Configurable LLM Backend**: Allow switching between different LLM providers or local models.
-- **Dockerization**: Add Dockerfile and container configuration for deployment.
-- **Structured Logging**: Integrate logging (e.g., `structlog`) for better observability.
-- **Enhanced Tests**: Increase coverage and include performance/load testing.
-- **Data Persistence**: Store audit logs and match results in a database or centralized log.
